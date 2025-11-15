@@ -193,7 +193,6 @@ def analyze():
         # Step 6: Cultural context (LingoDev)
         cultural_context = lingodev.get_cultural_context(
             text=translated_text,
-            language=source_lang
         )
 
         # Calculate risk level
