@@ -1,5 +1,7 @@
 # LingoDev - AI-Powered Communication Analysis
 
+🚀 **Live Demo:** https://abundant-alignment-production-f663.up.railway.app/
+
 An intelligent communication analysis platform that detects emotions, analyzes ambiguity, and suggests improvements to help users communicate more clearly and effectively.
 
 ## 🌟 Features
