@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analysis Results - Misunderstanding Engine</title>
+
+  <!-- External Libraries -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --dark: #1e293b;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem 0;
+    }
+
+    .results-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .nav-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo-mini {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      color: white;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      border: none;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 1.5rem 2rem;
+      border: none;
+      font-weight: 700;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .original-text {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      padding: 1.5rem;
+      border-radius: 16px;
+      border-left: 4px solid var(--primary);
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .score-card {
+      background: linear-gradient(135deg, #fff7ed, #fed7aa);
+      padding: 1.5rem;
+      border-radius: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-card.high {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+    }
+
+    .score-card.medium {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+    }
+
+    .score-card.low {
+      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    }
+
+    .score-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .score-card.high::before {
+      background: linear-gradient(90deg, var(--danger), #dc2626);
+    }
+
+    .score-card.medium::before {
+      background: linear-gradient(90deg, var(--warning), #f59e0b);
+    }
+
+    .score-card.low::before {
+      background: linear-gradient(90deg, var(--success), #10b981);
+    }
+
+    .score-value {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--warning), var(--danger));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .score-label {
+      font-size: 1rem;
+      color: #92400e;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+
+    .misunderstanding-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid var(--danger);
+      transition: all 0.3s;
+    }
+
+    .misunderstanding-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .misunderstanding-title {
+      font-weight: 700;
+      color: var(--danger);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .misunderstanding-text {
+      font-size: 1.05rem;
+      color: var(--dark);
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #fef2f2;
+      border-radius: 12px;
+    }
+
+    .likelihood-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .likelihood-high {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      color: #991b1b;
+    }
+
+    .likelihood-medium {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #92400e;
+    }
+
+    .likelihood-low {
+      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+      color: #166534;
+    }
+
+    .improved-section {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      padding: 2rem;
+      border-radius: 16px;
+      border-left: 4px solid var(--success);
+    }
+
+    .improved-title {
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    .improved-text {
+      font-size: 1.1rem;
+      color: var(--dark);
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      line-height: 1.7;
+    }
+
+    .emotion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      margin: 0.25rem;
+    }
+
+    .loading-placeholder {
+      text-align: center;
+      padding: 3rem;
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .nav-header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .card-body {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <div class="container">
+    <div class="nav-header">
+      <div class="logo-mini">
+        <i class="fas fa-comments"></i> Misunderstanding Engine
+      </div>
+      <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Analyze Another
+      </a>
+    </div>
+  </div>
+
+  <!-- Results Container -->
+  <div class="container results-container" id="resultsContainer">
+    <div class="loading-placeholder">
+      <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p style="margin-top: 1rem;">Loading analysis results...</p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Load results from sessionStorage
+    const results = JSON.parse(sessionStorage.getItem('analysisResults') || '{}');
+
+    if (!results.original_text) {
+      document.getElementById('resultsContainer').innerHTML = `
+        <div class="card">
+          <div class="card-body text-center">
+            <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: var(--warning);"></i>
+            <h3 style="margin-top: 1rem;">No Analysis Found</h3>
+            <p style="color: #64748b;">Please go back and analyze some text first.</p>
+            <a href="/" class="back-btn" style="margin-top: 1rem;">Go to Home</a>
+          </div>
+        </div>
+      `;
+    } else {
+      renderResults(results);
+    }
+
+    function renderResults(data) {
+      const container = document.getElementById('resultsContainer');
+
+      // Use real API data
+      const emotion = data.emotion_analysis || {};
+      const ambiguity = data.ambiguity_score || 5.0;
+      const risk = data.misunderstanding_risk || 'MEDIUM';
+      const misunderstandings = data.misunderstandings || [];
+      const improved = data.improved_version || data.original_text;
+      const clarity = data.clarity_improvement || 50;
+
+      // Determine risk level class
+      const riskClass = risk === 'HIGH' ? 'high' : risk === 'LOW' ? 'low' : 'medium';
+
+      container.innerHTML = `
+        <!-- Original Text Card -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-quote-left"></i>
+            Your Original Message
+          </div>
+          <div class="card-body">
+            <div class="original-text">
+              "${data.original_text}"
+            </div>
+
+            <!-- Emotion Badges -->
+            <div style="margin-top: 1rem;">
+              <strong>Detected Emotions:</strong><br>
+              ${(emotion.emotions || ['neutral'])
+                .map(
+                  (e) => `
+                <span class="emotion-badge" style="background: linear-gradient(135deg, #fecaca, #fca5a5); color: #991b1b;">
+                  <i class="fas fa-heart"></i> ${e}
+                </span>`
+                )
+                .join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Scores Card -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-chart-bar"></i>
+            Communication Analysis Scores
+          </div>
+          <div class="card-body">
+            <div class="score-grid">
+              <div class="score-card ${riskClass}">
+                <div class="score-value">${ambiguity.toFixed(1)}</div>
+                <div class="score-label">Ambiguity Score</div>
+                <small style="color: #92400e;">Out of 10</small>
+              </div>
+
+              <div class="score-card ${riskClass}">
+                <div class="score-value">${(emotion.intensity || 5).toFixed(1)}</div>
+                <div class="score-label">Emotional Intensity</div>
+                <small style="color: #92400e;">${emotion.primary_emotion || 'neutral'}</small>
+              </div>
+
+              <div class="score-card ${riskClass}">
+                <div class="score-value" style="font-size: 2rem;">${risk}</div>
+                <div class="score-label">Misunderstanding Risk</div>
+                <small style="color: #92400e;">Probability of confusion</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Misunderstandings Card -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            Possible Misunderstandings
+          </div>
+          <div class="card-body">
+            <p style="color: #64748b; margin-bottom: 2rem;">
+              Here's how different people might misinterpret your message:
+            </p>
+
+            ${misunderstandings.length > 0 ? misunderstandings
+              .map(
+                (mis, index) => `
+              <div class="misunderstanding-card">
+                <div class="misunderstanding-title">
+                  <i class="fas fa-user-slash"></i>
+                  Misinterpretation #${index + 1}
+                  <span class="likelihood-badge ${
+                    (mis.likelihood || 5) >= 8
+                      ? 'likelihood-high'
+                      : (mis.likelihood || 5) >= 5
+                      ? 'likelihood-medium'
+                      : 'likelihood-low'
+                  }">
+                    ${mis.likelihood || 5}/10 Likelihood
+                  </span>
+                </div>
+
+                <div class="misunderstanding-text">
+                  "${mis.misunderstood_meaning}"
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                  <div>
+                    <strong style="color: var(--primary);">
+                      <i class="fas fa-heart"></i> Emotional Impact:
+                    </strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #64748b;">
+                      ${mis.emotional_impact}
+                    </p>
+                  </div>
+                  <div>
+                    <strong style="color: var(--secondary);">
+                      <i class="fas fa-brain"></i> Why This Happens:
+                    </strong>
+                    <p style="margin: 0.5rem 0 0 0; color: #64748b;">
+                      ${mis.why_it_happens}
+                    </p>
+                  </div>
+                </div>
+              </div>`
+              )
+              .join('') : '<p style="color: #64748b;">No specific misunderstandings detected for this message.</p>'}
+          </div>
+        </div>
+
+        <!-- Improved Version Card -->
+        <div class="card">
+          <div class="card-header" style="background: linear-gradient(135deg, var(--success), #059669);">
+            <i class="fas fa-check-circle"></i>
+            Suggested Improvement
+          </div>
+          <div class="card-body">
+            <div class="improved-section">
+              <div class="improved-title">
+                <i class="fas fa-magic"></i>
+                Here's a clearer way to express this:
+              </div>
+              <div class="improved-text">
+                "${improved}"
+              </div>
+
+              <div style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 12px;">
+                <strong style="color: var(--success);">
+                  <i class="fas fa-arrow-up"></i>
+                  ${clarity}% improvement in clarity
+                </strong>
+                <p style="color: #64748b; margin: 0.5rem 0 0 0;">
+                  ${emotion.hidden_feelings || 'This version reduces ambiguity and makes your intent clearer.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-lightbulb"></i>
+            Communication Tips
+          </div>
+          <div class="card-body">
+            <div style="display: grid; gap: 1rem;">
+              <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--primary);">
+                <strong><i class="fas fa-check-circle" style="color: var(--success);"></i> Be Direct:</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #64748b;">
+                  Replace ambiguous phrases with clear statements about your preferences.
+                </p>
+              </div>
+
+              <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                <strong><i class="fas fa-heart" style="color: var(--accent);"></i> Express Emotions:</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #64748b;">
+                  Don't hide feelings behind neutral language. Share what you're actually feeling.
+                </p>
+              </div>
+
+              <div style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--accent);">
+                <strong><i class="fas fa-comments" style="color: var(--primary);"></i> Invite Dialogue:</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #64748b;">
+                  End with an opening for discussion rather than closing the conversation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+<script>
+(async function () {
+  const srcText = document.getElementById('translationSourceText');
+  const targetSelect = document.getElementById('targetLanguageSelect');
+  const translateOnlyBtn = document.getElementById('translateOnlyBtn');
+  const translateAndAnalyzeBtn = document.getElementById('translateAndAnalyzeBtn');
+  const detectedBox = document.getElementById('detectedLanguageBox');
+  const detectedName = document.getElementById('detectedLanguageName');
+  const detectedCode = document.getElementById('detectedLanguageCode');
+  const detectedConfidence = document.getElementById('detectedConfidence');
+  const translatedOutputBox = document.getElementById('translatedOutputBox');
+  const translatedTextEl = document.getElementById('translatedText');
+  const translationProvider = document.getElementById('translationProvider');
+  const loadingElem = document.getElementById('translationLoading');
+
+  function setLoading(on) {
+    loadingElem.style.display = on ? 'block' : 'none';
+    translateOnlyBtn.disabled = on;
+    translateAndAnalyzeBtn.disabled = on;
+  }
+
+  // Enable/disable buttons based on input & target selection
+  function updateButtons() {
+    const hasText = srcText.value.trim().length > 0;
+    const hasTarget = targetSelect.value && targetSelect.value.trim().length > 0;
+    translateOnlyBtn.disabled = !(hasText && hasTarget);
+    translateAndAnalyzeBtn.disabled = !(hasText && hasTarget);
+  }
+  srcText.addEventListener('input', updateButtons);
+  targetSelect.addEventListener('change', updateButtons);
+
+  // Handler to call /api/translate (detect+translate)
+  async function callTranslate(runAnalysis=false) {
+    const text = srcText.value.trim();
+    const target = targetSelect.value;
+    if (!text || !target) return null;
+    setLoading(true);
+    try {
+      const endpoint = runAnalysis ? '/api/translate-and-analyze' : '/api/translate';
+      const body = { text: text, target: target, run_analysis: runAnalysis };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        console.error('Translate API error', j);
+        alert('Translation API error: ' + (j.error || j.analysis_error || 'unknown'));
+        setLoading(false);
+        return null;
+      }
+
+      // If we have translation (either top-level or under `translation`)
+      const payload = j.translation || j;
+      // show detected language if present
+      if (payload.detected_lang) {
+        detectedBox.style.display = 'block';
+        detectedName.textContent = payload.detected_lang;
+        detectedCode.textContent = payload.detected_lang;
+        detectedConfidence.textContent = Math.round((payload.detection_confidence||0)*100);
+      }
+
+      const translated = payload.translated_text || payload.translatedText || "";
+      translatedTextEl.textContent = translated;
+      translatedOutputBox.style.display = 'block';
+      translationProvider.textContent = payload.used_provider || 'MyMemory/Lingo';
+
+      // If runAnalysis and an analysis object is present, store & redirect to analysis page
+      if (runAnalysis && j.analysis) {
+        // Save full response to sessionStorage for /analysis page to read
+        sessionStorage.setItem('analysisResults', JSON.stringify(j));
+        // mimic the existing analyze button behaviour: redirect to /analysis
+        window.location.href = '/analysis';
+      } else if (runAnalysis && j.analysis_error) {
+        alert('Analysis error: ' + j.analysis_error);
+      }
+
+      setLoading(false);
+      return j;
+    } catch (err) {
+      console.error('Translation/network error', err);
+      alert('Network error while translating: ' + err);
+      setLoading(false);
+      return null;
+    }
+  }
+
+  translateOnlyBtn.addEventListener('click', () => callTranslate(false));
+  translateAndAnalyzeBtn.addEventListener('click', () => callTranslate(true));
+
+  // Initialize button state
+  updateButtons();
+})();
+</script>
+
+<script>
+(async function () {
+  const srcText = document.getElementById('translationSourceText');
+  const targetSelect = document.getElementById('targetLanguageSelect');
+  const translateOnlyBtn = document.getElementById('translateOnlyBtn');
+  const translateAndAnalyzeBtn = document.getElementById('translateAndAnalyzeBtn');
+  const detectedBox = document.getElementById('detectedLanguageBox');
+  const detectedName = document.getElementById('detectedLanguageName');
+  const detectedCode = document.getElementById('detectedLanguageCode');
+  const detectedConfidence = document.getElementById('detectedConfidence');
+  const translatedOutputBox = document.getElementById('translatedOutputBox');
+  const translatedTextEl = document.getElementById('translatedText');
+  const translationProvider = document.getElementById('translationProvider');
+  const loadingElem = document.getElementById('translationLoading');
+
+  const mainTextInput = document.getElementById('textInput');
+  const mainCharCount = document.getElementById('charCount');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+
+  function setLoading(on) {
+    loadingElem.style.display = on ? 'block' : 'none';
+    translateOnlyBtn.disabled = on;
+    translateAndAnalyzeBtn.disabled = on;
+  }
+
+  function updateButtons() {
+    const hasText = srcText && srcText.value.trim().length > 0;
+    const hasTarget = targetSelect && targetSelect.value && targetSelect.value.trim().length > 0;
+    if (translateOnlyBtn) translateOnlyBtn.disabled = !(hasText && hasTarget);
+    if (translateAndAnalyzeBtn) translateAndAnalyzeBtn.disabled = !(hasText && hasTarget);
+  }
+  if (srcText) srcText.addEventListener('input', updateButtons);
+  if (targetSelect) targetSelect.addEventListener('change', updateButtons);
+
+  // update main textarea and counters
+  function populateMainInputWithTranslated(translated) {
+    if (!translated) return;
+    if (!mainTextInput) return;
+    mainTextInput.value = translated;
+    if (mainCharCount) mainCharCount.textContent = translated.length;
+    if (analyzeBtn) analyzeBtn.disabled = translated.trim().length === 0;
+  }
+
+  async function callTranslate(runAnalysis=false) {
+    const text = srcText ? srcText.value.trim() : "";
+    const target = targetSelect ? targetSelect.value : "";
+    if (!text || !target) {
+      alert("Please enter source text and select a target language.");
+      return null;
+    }
+    setLoading(true);
+    try {
+      const endpoint = runAnalysis ? '/api/translate-and-analyze' : '/api/translate';
+      const body = { text: text, target: target, run_analysis: runAnalysis };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        console.error('Translate API error', j);
+        alert('Translation API error: ' + (j.error || j.analysis_error || JSON.stringify(j)));
+        setLoading(false);
+        return null;
+      }
+
+      const payload = j.translation || j;
+      // show detected language if present
+      if (payload && payload.detected_lang && detectedBox) {
+        detectedBox.style.display = 'block';
+        detectedName.textContent = payload.detected_lang;
+        detectedCode.textContent = payload.detected_lang;
+        detectedConfidence.textContent = Math.round((payload.detection_confidence||0)*100);
+      }
+
+      const translated = (payload && (payload.translated_text || payload.translatedText)) || "";
+      if (translatedTextEl) translatedTextEl.textContent = translated;
+      if (translatedOutputBox && translated) translatedOutputBox.style.display = 'block';
+      if (translationProvider) translationProvider.textContent = payload && payload.used_provider ? payload.used_provider : 'MyMemory/Lingo';
+
+      // === NEW: auto-populate main analysis textarea ===
+      populateMainInputWithTranslated(translated);
+
+      // If runAnalysis and an analysis object is present, save & redirect to analysis page
+      if (runAnalysis && j.analysis) {
+        sessionStorage.setItem('analysisResults', JSON.stringify(j));
+        window.location.href = '/analysis';
+      } else if (runAnalysis && j.analysis_error) {
+        alert('Analysis error: ' + j.analysis_error);
+      }
+
+      setLoading(false);
+      return j;
+    } catch (err) {
+      console.error('Translation/network error', err);
+      alert('Network error while translating: ' + err);
+      setLoading(false);
+      return null;
+    }
+  }
+
+  if (translateOnlyBtn) translateOnlyBtn.addEventListener('click', () => callTranslate(false));
+  if (translateAndAnalyzeBtn) translateAndAnalyzeBtn.addEventListener('click', () => callTranslate(true));
+
+  // initialize
+  updateButtons();
+})();
+</script>
+
+<script>
+/*
+ Robust translator UI script:
+ - waits for DOMContentLoaded
+ - validates expected element IDs and logs missing ones
+ - handles translate-only and translate+analyze
+ - guaranteed to populate #textInput and update char count
+*/
+document.addEventListener("DOMContentLoaded", () => {
+  // Element selectors - change these if your IDs differ
+  const ids = {
+    srcText: 'translationSourceText',
+    targetSelect: 'targetLanguageSelect',
+    btnTranslateOnly: 'translateOnlyBtn',
+    btnTranslateAndAnalyze: 'translateAndAnalyzeBtn',
+    detectedBox: 'detectedLanguageBox',
+    detectedName: 'detectedLanguageName',
+    detectedCode: 'detectedLanguageCode',
+    detectedConfidence: 'detectedConfidence',
+    translatedOutputBox: 'translatedOutputBox',
+    translatedText: 'translatedText',
+    translationProvider: 'translationProvider',
+    loadingElem: 'translationLoading',
+    mainTextInput: 'textInput',
+    mainCharCount: 'charCount',
+    analyzeBtn: 'analyzeBtn'
+  };
+
+  // Resolve elements
+  const el = {};
+  for (const [key, id] of Object.entries(ids)) {
+    el[key] = document.getElementById(id);
+    if (!el[key]) {
+      console.warn(`[translator] Missing element for key "${key}" (id="${id}"). Script may not work until you create/rename this element.`);
+    }
+  }
+
+  // If mainTextInput missing, abort early with clear message
+  if (!el.mainTextInput) {
+    console.error('[translator] Cannot find main analysis textarea with id "' + ids.mainTextInput + '". Please ensure it exists.');
+    return;
+  }
+
+  function setLoading(on) {
+    if (el.loadingElem) el.loadingElem.style.display = on ? 'block' : 'none';
+    if (el.btnTranslateOnly) el.btnTranslateOnly.disabled = on;
+    if (el.btnTranslateAndAnalyze) el.btnTranslateAndAnalyze.disabled = on;
+  }
+
+  function updateButtons() {
+    const hasText = el.srcText && el.srcText.value.trim().length > 0;
+    const hasTarget = el.targetSelect && el.targetSelect.value && el.targetSelect.value.trim().length > 0;
+    if (el.btnTranslateOnly) el.btnTranslateOnly.disabled = !(hasText && hasTarget);
+    if (el.btnTranslateAndAnalyze) el.btnTranslateAndAnalyze.disabled = !(hasText && hasTarget);
+  }
+
+  if (el.srcText) el.srcText.addEventListener('input', updateButtons);
+  if (el.targetSelect) el.targetSelect.addEventListener('change', updateButtons);
+
+  function populateMainInputWithTranslated(translated) {
+    if (!translated || !el.mainTextInput) return;
+    try {
+      el.mainTextInput.value = translated;
+      if (el.mainCharCount) el.mainCharCount.textContent = translated.length;
+      if (el.analyzeBtn) el.analyzeBtn.disabled = translated.trim().length === 0;
+      console.info('[translator] Populated main #textInput with translated text (length=' + translated.length + ').');
+    } catch (e) {
+      console.error('[translator] Failed to populate main input:', e);
+    }
+  }
+
+  async function callTranslate(runAnalysis=false) {
+    if (!el.srcText || !el.targetSelect) {
+      alert('Translation fields are missing. Check console for details.');
+      return null;
+    }
+    const text = el.srcText.value.trim();
+    const target = el.targetSelect.value;
+    if (!text || !target) {
+      alert('Please enter source text and select a target language.');
+      return null;
+    }
+    setLoading(true);
+    try {
+      const endpoint = runAnalysis ? '/api/translate-and-analyze' : '/api/translate';
+      const body = { text: text, target: target, run_analysis: runAnalysis };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        console.error('[translator] API error', j);
+        alert('Translation API error: ' + (j.error || j.analysis_error || JSON.stringify(j)));
+        setLoading(false);
+        return null;
+      }
+
+      const payload = j.translation || j;
+      // show detected language if present
+      if (payload && payload.detected_lang && el.detectedBox) {
+        el.detectedBox.style.display = 'block';
+        if (el.detectedName) el.detectedName.textContent = payload.detected_lang;
+        if (el.detectedCode) el.detectedCode.textContent = payload.detected_lang;
+        if (el.detectedConfidence) el.detectedConfidence.textContent = Math.round((payload.detection_confidence||0)*100);
+      }
+
+      const translated = payload && (payload.translated_text || payload.translatedText) ? (payload.translated_text || payload.translatedText) : "";
+      if (el.translatedText) el.translatedText.textContent = translated;
+      if (el.translatedOutputBox && translated) el.translatedOutputBox.style.display = 'block';
+      if (el.translationProvider) el.translationProvider.textContent = payload && payload.used_provider ? payload.used_provider : 'MyMemory/Lingo';
+
+      // populate main input (THIS IS THE KEY BEHAVIOR)
+      populateMainInputWithTranslated(translated);
+
+      // If runAnalysis and analysis present: store and redirect
+      if (runAnalysis && j.analysis) {
+        sessionStorage.setItem('analysisResults', JSON.stringify(j));
+        window.location.href = '/analysis';
+      } else if (runAnalysis && j.analysis_error) {
+        alert('Analysis error: ' + j.analysis_error);
+      }
+
+      setLoading(false);
+      return j;
+    } catch (err) {
+      console.error('[translator] Network/translation error', err);
+      alert('Network error while translating: ' + err);
+      setLoading(false);
+      return null;
+    }
+  }
+
+  if (el.btnTranslateOnly) el.btnTranslateOnly.addEventListener('click', () => callTranslate(false));
+  if (el.btnTranslateAndAnalyze) el.btnTranslateAndAnalyze.addEventListener('click', () => callTranslate(true));
+
+  // initialize button states
+  updateButtons();
+
+  // Helpful debug helper: expose a manual populate function to console for one-off tests
+  window._translator_populate_main = function(sampleText) {
+    populateMainInputWithTranslated(sampleText || 'test translated text');
+  };
+});
+</script>
+
+
+</body>
+</html>

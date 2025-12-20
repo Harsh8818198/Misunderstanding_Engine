@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Misunderstanding Engine - Decode Communication</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .input-section {
+            margin: 2rem 0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        textarea.form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea.form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            width: 100%;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .example-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 16px;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .example-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .glass-card { padding: 1.5rem; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="glass-card">
+                        <!-- Logo & Title -->
+                        <div class="logo-section">
+                            <div class="logo-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h1>The Misunderstanding Engine</h1>
+                            <p class="tagline">
+                                Discover how your words can be misunderstood • AI-powered communication analysis
+                            </p>
+                        </div>
+
+                        <!-- Input Section -->
+                        <div class="input-section">
+                            <label class="form-label">
+                                <i class="fas fa-pen-fancy"></i>
+                                Enter your message to analyze
+                            </label>
+                            <textarea
+                                id="textInput"
+                                class="form-control"
+                                placeholder="E.g., 'I'm fine with whatever you decide...' or 'We need to talk.'"
+                                maxlength="1000"
+                            ></textarea>
+                            <div class="char-count">
+                                <span id="charCount">0</span> / 1000 characters
+                            </div>
+                        </div>
+
+                        {% include "translator.html" %}
+
+
+
+
+
+
+
+                        <!-- Analyze Button -->
+                        <button class="analyze-btn" id="analyzeBtn" disabled>
+                            <i class="fas fa-magic"></i> Analyze Misunderstandings
+                        </button>
+
+                        <!-- Loading Spinner -->
+                        <div class="loading-spinner" id="loadingSpinner">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 1rem; color: #64748b;">Analyzing with AI...</p>
+                        </div>
+
+                        <!-- Quick Examples -->
+                        <div class="example-section">
+                            <div class="example-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Try these examples:
+                            </div>
+                            <div class="example-item" onclick="fillExample('I\'m fine.')">
+                                💬 "I'm fine."
+                            </div>
+                            <div class="example-item" onclick="fillExample('We need to talk.')">
+                                💬 "We need to talk."
+                            </div>
+                            <div class="example-item" onclick="fillExample('That\'s interesting.')">
+                                💬 "That's interesting."
+                            </div>
+                            <div class="example-item" onclick="fillExample('Do whatever you want.')">
+                                💬 "Do whatever you want."
+                            </div>
+                        </div>
+
+                        <!-- Features Grid -->
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="feature-title">Emotional AI</div>
+                                <div class="feature-desc">Detects hidden emotions</div>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-language"></i>
+                                </div>
+                                <div class="feature-title">Multi-Language</div>
+                                <div class="feature-desc">Cultural context analysis</div>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="feature-title">AI-Powered</div>
+                                <div class="feature-desc">GPT-4 + TensorFlow</div>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="feature-title">Real Insights</div>
+                                <div class="feature-desc">Actionable suggestions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const textInput = document.getElementById('textInput');
+        const charCount = document.getElementById('charCount');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Character counter
+        textInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+            analyzeBtn.disabled = this.value.trim().length === 0;
+        });
+
+        // Fill example text
+        function fillExample(text) {
+            textInput.value = text;
+            charCount.textContent = text.length;
+            analyzeBtn.disabled = false;
+            textInput.focus();
+        }
+
+        // Analyze button click
+        analyzeBtn.addEventListener('click', async function() {
+            const text = textInput.value.trim();
+
+            if (!text) {
+                alert('Please enter some text to analyze!');
+                return;
+            }
+
+            // Show loading
+            analyzeBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                // Store results and redirect to analysis page
+                sessionStorage.setItem('analysisResults', JSON.stringify(data));
+                window.location.href = '/analysis';
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Oops! Something went wrong. Please try again.');
+                loadingSpinner.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // Enter key to analyze (Ctrl+Enter)
+        textInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                analyzeBtn.click();
+            }
+        });
+    </script>
+<script>
+document.getElementById("translator-btn").addEventListener("click", async () => {
+  const srcEl = document.getElementById("translator-input");
+  const tgtEl = document.getElementById("translator-target");
+  const outEl = document.getElementById("translator-output");
+  const analysisOutEl = document.getElementById("translator-analysis-output");
+
+  const mainTextEl = document.getElementById("textInput");
+  const charCountEl = document.getElementById("charCount");
+  const analyzeBtnEl = document.getElementById("analyzeBtn");
+
+  if (!srcEl || !tgtEl) { alert("Translator controls not found."); return; }
+
+  const text = srcEl.value.trim();
+  const target = tgtEl.value;
+  if (!text) { alert("Paste text to translate."); return; }
+  if (!target) { alert("Select a target language."); return; }
+
+  // Translate-only endpoint (do not auto-analyze)
+  try {
+    const res = await fetch("/api/translate", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ text, target })
+    });
+    const j = await res.json();
+
+    if (!res.ok) {
+      const err = j.error || j.analysis_error || JSON.stringify(j);
+      if (outEl) outEl.textContent = err;
+      if (analysisOutEl) { analysisOutEl.style.display = "block"; analysisOutEl.textContent = j.analysis_error || ""; }
+      alert("Translation failed: " + err);
+      return;
+    }
+
+    const payload = j.translation || j;
+    const translated = payload.translated_text || payload.translatedText || "";
+
+    // display translated text
+    if (outEl) outEl.textContent = translated;
+    const box = document.getElementById("translatedOutputBox");
+    if (box) box.style.display = translated ? "block" : "none";
+    const prov = document.getElementById("translationProvider");
+    if (prov) prov.textContent = payload.used_provider || prov.textContent || "MyMemory/Lingo";
+
+    // populate main analysis textarea WITHOUT triggering analysis
+    if (mainTextEl && typeof translated === "string") {
+      mainTextEl.value = translated;
+      if (charCountEl) charCountEl.textContent = translated.length;
+      if (analyzeBtnEl) analyzeBtnEl.disabled = translated.trim().length === 0;
+    }
+    // keep analysis-out cleared for now
+    if (analysisOutEl) { analysisOutEl.style.display = "none"; analysisOutEl.textContent = ""; }
+
+  } catch (e) {
+    console.error("Translation error:", e);
+    alert("Network error while translating: " + e.message);
+  }
+});
+</script>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[translator-final] scanning for translator UI…");
+
+  // === FIND ELEMENTS REGARDLESS OF ID ===
+  function find(...selectors) {
+    for (const s of selectors) {
+      const el =
+        document.getElementById(s) ||
+        document.querySelector("#" + s) ||
+        document.querySelector("." + s) ||
+        document.querySelector(`[name="${s}"]`);
+      if (el) return el;
+    }
+    return null;
+  }
+
+  const srcText = find(
+    "translationSourceText",
+    "translator-input",
+    "translation-source",
+    "sourceText"
+  );
+  const targetSelect = find(
+    "targetLanguageSelect",
+    "translator-target",
+    "target_lang",
+    "targetLanguage"
+  );
+  const btnOnly = find(
+    "translateOnlyBtn",
+    "translate-only",
+    "translator-btn",
+    "btnTranslateOnly"
+  );
+  const btnAnalyze = find(
+    "translateAndAnalyzeBtn",
+    "translate-and-analyze",
+    "btnTranslateAndAnalyze"
+  );
+  const translatedTextBox = find(
+    "translatedText",
+    "translator-output",
+    "translatedTextOutput"
+  );
+  const translatedBox = find(
+    "translatedOutputBox",
+    "translator-output-box",
+    "translatedOutput"
+  );
+  const provider = find("translationProvider");
+
+  const mainText = document.getElementById("textInput");
+  const mainCount = document.getElementById("charCount");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+
+  if (!mainText) {
+    console.error("[translator-final] ERROR: main #textInput not found");
+    return;
+  }
+
+  function setMainText(text) {
+    mainText.value = text;
+    if (mainCount) mainCount.textContent = text.length;
+    if (analyzeBtn) analyzeBtn.disabled = text.trim().length === 0;
+    console.log("[translator-final] Populated main text:", text);
+  }
+
+  async function callAPI(runAnalysis = false) {
+    if (!srcText || !targetSelect) {
+      alert("Translator input or target selector missing on this page.");
+      return;
+    }
+
+    const text = srcText.value.trim();
+    const target = targetSelect.value.trim();
+    if (!text || !target) {
+      alert("Enter text & select target language.");
+      return;
+    }
+
+    const endpoint = runAnalysis
+      ? "/api/translate-and-analyze"
+      : "/api/translate";
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, target, run_analysis: runAnalysis }),
+      });
+
+      const json = await res.json();
+      const payload = json.translation || json;
+
+      const translated = payload.translated_text || payload.translatedText || "";
+      if (translated) {
+        if (translatedTextBox) translatedTextBox.textContent = translated;
+        if (translatedBox) translatedBox.style.display = "block";
+        if (provider)
+          provider.textContent = payload.used_provider || "MyMemory";
+
+        // PUT INTO MAIN ANALYSIS BOX
+        setMainText(translated);
+      }
+
+      // Redirect on analysis
+      if (runAnalysis && json.analysis) {
+        sessionStorage.setItem("analysisResults", JSON.stringify(json));
+        window.location.href = "/analysis";
+      } else if (runAnalysis && json.analysis_error) {
+        alert("Analysis error: " + json.analysis_error);
+      }
+    } catch (e) {
+      console.error("[translator-final] API error", e);
+      alert("Translation failed: " + e.message);
+    }
+  }
+
+  // === WIRE BUTTONS ===
+  if (btnOnly) {
+    btnOnly.addEventListener("click", () => callAPI(false));
+    console.log("[translator-final] Bound Translate Only button");
+  } else {
+    console.warn("[translator-final] No Translate Only button found");
+  }
+
+  if (btnAnalyze) {
+    btnAnalyze.addEventListener("click", () => callAPI(true));
+    console.log("[translator-final] Bound Translate & Analyze button");
+  } else {
+    console.warn("[translator-final] No Translate & Analyze button found");
+  }
+
+  console.log("[translator-final] Translator UI ready.");
+});
+</script>
+
+</body>
+</html>

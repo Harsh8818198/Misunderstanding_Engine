@@ -1,0 +1,8 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 2rem;
+  background: #f8f9fb;
+  color: #222;
+}
+header { margin-bottom: 1rem; }
+nav a { margin-right: 0.5rem; text-decoration: none; color: #0366d6; }
