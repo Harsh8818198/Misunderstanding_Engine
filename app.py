@@ -1,113 +1,35 @@
-# Add this import at the top with your other imports
-from routes.translator_routes import bp as translator_bp
+# app.py - Updated for Gemini API
 
-# Register the blueprint (add this after your other blueprint registrations)
-
-from langdetect import detect, DetectorFactory
-from deep_translator import GoogleTranslator
 from flask import Flask, render_template, request, jsonify
 import os
 from dotenv import load_dotenv
-from ai_integrations.gemini_client import OpenRouterAnalyzer
+from langdetect import detect, DetectorFactory
+from deep_translator import GoogleTranslator
+
+# Import Gemini client instead of OpenRouter
+from ai_integrations.gemini_client import GeminiClient
 from ai_integrations.lingodev_client import LingoDevClient
+from routes.translator_routes import bp as translator_bp
+
+load_dotenv()
+
+# Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.register_blueprint(translator_bp)
-import requests
 
+# Check API key
+gemini_key = os.getenv('GEMINI_API_KEY')
+print(f"🔑 API Key loaded: {gemini_key[:20]}..." if gemini_key else "❌ No Gemini API key found!")
 
-load_dotenv()
-# Add after load_dotenv()
-print(f"🔑 API Key loaded: {os.getenv('OPENROUTER_API_KEY')[:20]}..." if os.getenv('OPENROUTER_API_KEY') else "❌ No API key found!")
-
-
-def analyze_text_internal(text: str) -> dict:
-    """
-    Internal function to analyze text
-    This wraps your existing /analyze endpoint logic
-    so translate-and-analyze can call it programmatically
-
-    Returns the same JSON structure as your /analyze endpoint
-    """
-    # Import your existing analysis modules here
-    # Example:
-    # from ai_integrations.OpenRouter_client import openrouter
-    # from ai_integrations.LingoDev_client import lingodev
-
-    # Call your existing analysis logic
-    # This should match what your /analyze endpoint does
-
-    # Example structure (adjust to match your actual code):
-    try:
-        # Your existing analysis logic here
-        emotion_analysis = openrouter.analyze_emotion(text)
-        ambiguity_score = openrouter.calculate_ambiguity_score(text)
-        misunderstandings = openrouter.generate_misunderstandings(text, emotion_analysis)
-        improved_version = openrouter.suggest_improvement(text, emotion_analysis)
-
-        return {
-            'status': 'success',
-            'original_text': text,
-            'emotion_analysis': emotion_analysis,
-            'ambiguity_score': ambiguity_score,
-            'misunderstandings': misunderstandings,
-            'improved_version': improved_version
-        }
-    except Exception as e:
-        return {
-            'status': 'error',
-            'message': str(e)
-        }
-def analyze_emotions(original_text, translated_text, source_lang, target_lang):
-    """Analyze emotions in both original and translated text"""
-    try:
-        api_key = os.getenv('OPENROUTER_API_KEY')
-
-        prompt = f"""Analyze the emotional tone of these texts:
-
-Original ({source_lang}): {original_text}
-Translated ({target_lang}): {translated_text}
-
-Provide:
-1. Original emotion: (joy/sadness/anger/neutral/optimism)
-2. Translated emotion: (joy/sadness/anger/neutral/optimism)
-3. Misunderstanding risk: (Low/Medium/High)
-4. Explanation: Brief reason for any mismatch
-
-Format: JSON only"""
-
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "meta-llama/llama-3.1-8b-instruct:free",
-                "messages": [{"role": "user", "content": prompt}]
-            }
-        )
-
-        result = response.json()
-        analysis = result['choices'][0]['message']['content']
-
-        return analysis
-
-    except Exception as e:
-        return {
-            'original_emotion': 'neutral',
-            'translated_emotion': 'neutral',
-            'risk': 'Low',
-            'explanation': 'Analysis unavailable'
-        }
 # Initialize AI clients
 try:
-    openrouter = OpenRouterAnalyzer()
+    gemini_client = GeminiClient()
     lingodev = LingoDevClient()
     print("✅ AI services initialized successfully!")
 except Exception as e:
     print(f"⚠️ AI initialization error: {e}")
-    openrouter = None
+    gemini_client = None
     lingodev = None
 
 
@@ -132,14 +54,14 @@ def analyze():
     if not text:
         return jsonify({'error': 'No text provided'}), 400
 
-    # If OpenRouter not available, return mock data
-    if not openrouter:
+    # If Gemini not available, return error
+    if not gemini_client:
         return jsonify({
             'status': 'error',
-            'message': 'AI service not configured',
+            'message': 'Gemini API service not configured',
             'original_text': text,
             'using_mock': True
-        })
+        }), 500
 
     try:
         print(f"\n{'=' * 50}")
@@ -149,51 +71,48 @@ def analyze():
         # Step 1: Language detection (LingoDev)
         print("1️⃣ Detecting language...")
         language_info = lingodev.detect_language(text) if lingodev else {"language": "en"}
-        print(f"   └─ Language: {language_info.get('language', 'en')}")
+        detected_lang = language_info.get('language', 'en')
+        print(f"   └─ Language: {detected_lang}")
 
-        # Step 1.5: Translation to English (LingoDev)
+        # Step 2: Translation to English if needed
         print("🌍 Translating text to English for standardized analysis...")
-        source_lang = language_info.get("language", "en")
-        # Step 1.5: Translation to English (LingoDev)
-        print("🌍 Translating text to English for standardized analysis...")
-        source_lang = language_info.get("language", "en")
+        source_lang = detected_lang
 
-        try:
-            translated_text = lingodev.translate_with_context(text, target_lang="en") if lingodev else text
-        except Exception as e:
-            print(f"Translation failed: {e}. Using original text.")
+        if source_lang != 'en':
+            try:
+                translator = GoogleTranslator(source=source_lang, target='en')
+                translated_text = translator.translate(text)
+            except Exception as e:
+                print(f"Translation failed: {e}. Using original text.")
+                translated_text = text
+        else:
             translated_text = text
 
         print(f"   └─ Translated text: {translated_text[:100]}...")
 
-        # Step 2: Emotion analysis (OpenRouter)
-        print("2️⃣ Analyzing emotions...")
-        emotion_analysis = openrouter.analyze_emotion(text)
-        print(f"   └─ Primary emotion: {emotion_analysis.get('primary_emotion')}")
+        # Step 3: Analyze with Gemini
+        print("2️⃣ Analyzing with Gemini AI...")
+        gemini_analysis = gemini_client.analyze_communication(translated_text, detected_lang)
 
-        # Step 3: Ambiguity score (OpenRouter)
-        print("3️⃣ Calculating ambiguity...")
-        ambiguity_score = openrouter.calculate_ambiguity_score(text)
+        # Extract Gemini results
+        emotion = gemini_analysis.get('emotion', 'neutral')
+        ambiguity_score = gemini_analysis.get('ambiguity_score', 5.0)
+        misunderstandings = gemini_analysis.get('misunderstandings', [])
+        improved_version = gemini_analysis.get('improved_version', text)
+        tone = gemini_analysis.get('tone', 'neutral')
+        clarity_issues = gemini_analysis.get('clarity_issues', [])
+
+        print(f"   └─ Primary emotion: {emotion}")
         print(f"   └─ Ambiguity score: {ambiguity_score}/10")
+        print(f"   └─ Generated {len(misunderstandings)} misunderstanding scenarios")
 
-        # Step 4: Generate misunderstandings (OpenRouter)
-        print("4️⃣ Generating misunderstandings...")
-        misunderstandings = openrouter.generate_misunderstandings(
-            text,
-            emotion_analysis,
-            count=5
-        )
-        print(f"   └─ Generated {len(misunderstandings)} scenarios")
-
-        # Step 5: Suggest improvement (OpenRouter)
-        print("5️⃣ Creating improved version...")
-        improved_version = openrouter.suggest_improvement(text, emotion_analysis)
-        print(f"   └─ Improvement ready")
-
-        # Step 6: Cultural context (LingoDev)
+        # Step 4: Cultural context (LingoDev)
+        print("4️⃣ Getting cultural context...")
         cultural_context = lingodev.get_cultural_context(
             text=translated_text,
-        )
+            source_lang=source_lang,
+            emotions=[emotion]
+        ) if lingodev else {"insights": ["Cultural analysis unavailable"]}
 
         # Calculate risk level
         risk_level = "HIGH" if ambiguity_score >= 7 else "MEDIUM" if ambiguity_score >= 4 else "LOW"
@@ -208,11 +127,11 @@ def analyze():
             'translated_text': translated_text,
             'language_info': language_info,
             'emotion_analysis': {
-                'primary_emotion': emotion_analysis.get('primary_emotion', 'neutral'),
-                'intensity': emotion_analysis.get('intensity', 5.0),
-                'emotions': emotion_analysis.get('emotions_detected', ['neutral']),
-                'hidden_feelings': emotion_analysis.get('hidden_feelings', ''),
-                'tone_markers': emotion_analysis.get('tone_markers', [])
+                'primary_emotion': emotion,
+                'intensity': min(ambiguity_score, 10.0) / 2,
+                'emotions': [emotion],
+                'tone': tone,
+                'clarity_issues': clarity_issues
             },
             'ambiguity_score': round(ambiguity_score, 1),
             'misunderstanding_risk': risk_level,
@@ -245,13 +164,18 @@ def analyze():
 def test_api():
     """Test endpoint to verify all APIs"""
     results = {
-        'openrouter': False,
+        'gemini': False,
         'lingodev': False
     }
 
-    # Test OpenRouter
-    if openrouter:
-        results['openrouter'] = openrouter.test_connection()
+    # Test Gemini
+    if gemini_client:
+        try:
+            test_result = gemini_client.analyze_communication("Hello world", "en")
+            results['gemini'] = test_result.get('emotion') is not None
+        except Exception as e:
+            print(f"Gemini test failed: {e}")
+            results['gemini'] = False
 
     # Test LingoDev
     if lingodev:
@@ -266,16 +190,34 @@ def test_api():
     return jsonify({
         'status': status,
         'services': results,
-        'message': f"OpenRouter: {'✅' if results['openrouter'] else '❌'}, LingoDev: {'✅' if results['lingodev'] else '❌'}"
+        'message': f"Gemini: {'✅' if results['gemini'] else '❌'}, LingoDev: {'✅' if results['lingodev'] else '❌'}"
+    })
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'gemini_configured': gemini_client is not None,
+        'lingodev_configured': lingodev is not None
     })
 
 
 if __name__ == '__main__':
     print("\n" + "=" * 60)
-    print("🚀 The Misunderstanding Engine - Starting Server")
+    print("🚀 The Misunderstanding Engine - Starting Server (Gemini Edition)")
     print("=" * 60)
     print(f"🌐 URL: http://127.0.0.1:5000")
     print(f"🧪 Test API: http://127.0.0.1:5000/test-api")
+    print(f"💚 Health: http://127.0.0.1:5000/health")
     print("=" * 60 + "\n")
+    print("\n" + "=" * 50)
+    print("🔍 ENVIRONMENT VARIABLES CHECK:")
+    print(f"GEMINI_API_KEY: {os.getenv('GEMINI_API_KEY')}")
+    print(f"Key length: {len(os.getenv('GEMINI_API_KEY', ''))} characters")
+    print(f"Starts with 'AIzaSy': {os.getenv('GEMINI_API_KEY', '').startswith('AIzaSy')}")
+    print("=" * 50 + "\n")
+
 
     app.run(debug=True, port=5000)

@@ -1,6 +1,6 @@
 """
 Configuration Management
-Separates development and production settings
+Updated for Gemini API
 """
 
 import os
@@ -11,13 +11,15 @@ load_dotenv()
 
 class Config:
     """Base configuration"""
-    SECRET_KEY = os.getenv('SECRET_KEY')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     JSON_SORT_KEYS = False
 
-    # API Keys
-    OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+    # API Keys - UPDATED FOR GEMINI
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+    GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash')
     LINGO_API_KEY = os.getenv('LINGO_API_KEY')
+    LINGODEV_API_KEY = os.getenv('LINGODEV_API_KEY')
 
     # Translation settings
     TRANSLATION_TIMEOUT = 30

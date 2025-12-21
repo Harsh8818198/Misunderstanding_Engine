@@ -32,10 +32,18 @@ class GeminiClient:
         # Configure Gemini
         genai.configure(api_key=self.api_key)
 
-        # Initialize model - using gemini-pro for text generation
-        # For production, consider gemini-1.5-pro or gemini-1.5-flash
-        self.model_name = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash')
+        # Initialize model - remove 'models/' prefix if present
+        # Get model name and clean it
+        model_name = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')  # Updated default
+        # Remove 'models/' prefix if present
+        self.model_name = model_name.replace('models/', '').strip()
+
+        print(f"🤖 Initializing model: {self.model_name}")
+
+        # Create model
         self.model = genai.GenerativeModel(self.model_name)
+
+        print(f"🤖 Using model: {self.model_name}")
 
         logger.info(f"Gemini client initialized with model: {self.model_name}")
 
